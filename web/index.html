@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>e-CF starter – vista previa</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    body { max-width: 860px; margin: 2rem auto; padding: 0 1rem; }
+    label { display: block; margin: .6rem 0 .2rem; font-size: .9rem; }
+    input, select { padding: .4rem; width: 100%; box-sizing: border-box; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+    button { margin-top: 1rem; padding: .6rem 1rem; cursor: pointer; }
+    pre { padding: 1rem; overflow: auto; border: 1px solid #8884; border-radius: 6px; white-space: pre-wrap; word-break: break-all; }
+    .err { color: #b00020; }
+    .warn { color: #8a6d00; }
+  </style>
+</head>
+<body>
+  <h1>e-CF starter</h1>
+  <p>Vista previa del XML sin firmar. Requiere el servidor corriendo (<code>npm run dev</code>). Todos los datos son ficticios.</p>
+
+  <form id="f">
+    <div class="row">
+      <div><label>Tipo</label>
+        <select name="tipo"><option value="31">31 – Crédito Fiscal</option><option value="32">32 – Consumo</option></select></div>
+      <div><label>eNCF (E + 12 dígitos)</label><input name="encf" value="E310000000001" /></div>
+    </div>
+    <div class="row">
+      <div><label>Fecha vencimiento secuencia (solo tipo 31)</label><input name="fechaVencimientoSecuencia" value="31-12-2027" /></div>
+      <div><label>Fecha de emisión</label><input name="fechaEmision" value="07-10-2026" /></div>
+    </div>
+    <div class="row">
+      <div><label>RNC emisor</label><input name="rncEmisor" value="100000001" /></div>
+      <div><label>RNC comprador (obligatorio en tipo 31)</label><input name="rncComprador" value="100000002" /></div>
+    </div>
+    <div class="row">
+      <div><label>Descripción del ítem</label><input name="descripcion" value="Servicio de ejemplo" /></div>
+      <div><label>Cantidad × Precio unitario</label>
+        <div class="row"><input name="cantidad" type="number" value="2" min="0" step="any" /><input name="precio" type="number" value="1500" min="0" step="any" /></div></div>
+    </div>
+    <button type="submit">Generar XML</button>
+  </form>
+
+  <h2>Resultado</h2>
+  <div id="msg"></div>
+  <pre id="out">—</pre>
+
+  <script>
+    const API = 'http://127.0.0.1:3000/api/v1/ecf/preview';
+    const $ = (id) => document.getElementById(id);
+
+    $('f').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const v = Object.fromEntries(new FormData(e.target));
+      const payload = {
+        tipo: v.tipo,
+        encf: v.encf,
+        ...(v.tipo === '31' ? { fechaVencimientoSecuencia: v.fechaVencimientoSecuencia } : {}),
+        emisor: { rnc: v.rncEmisor, razonSocial: 'EMPRESA DE EJEMPLO SRL', direccion: 'CALLE EJEMPLO 1', fechaEmision: v.fechaEmision },
+        comprador: { ...(v.rncComprador ? { rnc: v.rncComprador } : {}), razonSocial: 'CLIENTE DE EJEMPLO' },
+        items: [{ descripcion: v.descripcion, cantidad: Number(v.cantidad), precioUnitario: Number(v.precio) }],
+      };
+      $('msg').textContent = '';
+      try {
+        const res = await fetch(API, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+        const data = await res.json();
+        if (!res.ok) {
+          $('msg').innerHTML = '<p class="err"></p>';
+          $('msg').firstChild.textContent = (data.issues || []).map((i) => i.path + ': ' + i.message).join(' | ') || data.error;
+          $('out').textContent = '—';
+          return;
+        }
+        $('msg').innerHTML = '<p class="warn"></p>';
+        $('msg').firstChild.textContent = (data.warnings || []).join(' ');
+        $('out').textContent = data.xml + '\n\nMontoTotal: ' + data.totales.montoTotal.toFixed(2);
+      } catch (err) {
+        $('msg').innerHTML = '<p class="err"></p>';
+        $('msg').firstChild.textContent = 'No se pudo conectar con el servidor: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "tipo": "32",
+  "encf": "E320000000001",
+  "tipoIngresos": "01",
+  "tipoPago": 1,
+  "emisor": {
+    "rnc": "100000001",
+    "razonSocial": "EMPRESA DE EJEMPLO SRL",
+    "direccion": "CALLE EJEMPLO 1, SANTO DOMINGO",
+    "fechaEmision": "07-10-2026"
+  },
+  "comprador": {
+    "razonSocial": "CONSUMIDOR FINAL"
+  },
+  "items": [
+    { "descripcion": "Equipo de ejemplo", "cantidad": 3, "precioUnitario": 100000, "bienOServicio": 1 }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "tipo": "31",
+  "encf": "E310000000001",
+  "fechaVencimientoSecuencia": "31-12-2027",
+  "tipoIngresos": "01",
+  "tipoPago": 1,
+  "emisor": {
+    "rnc": "100000001",
+    "razonSocial": "EMPRESA DE EJEMPLO SRL",
+    "direccion": "CALLE EJEMPLO 1, SANTO DOMINGO",
+    "fechaEmision": "07-10-2026"
+  },
+  "comprador": {
+    "rnc": "100000002",
+    "razonSocial": "CLIENTE DE EJEMPLO SA"
+  },
+  "items": [
+    { "descripcion": "Servicio de consultoría", "cantidad": 10, "precioUnitario": 1500, "bienOServicio": 2 },
+    { "descripcion": "Material didáctico exento", "cantidad": 2, "precioUnitario": 500, "tasaITBIS": 0, "bienOServicio": 1 }
+  ]
+}
